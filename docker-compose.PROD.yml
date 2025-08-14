@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pg_db_prod
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - db_data_prod:/var/lib/postgresql/data
+    # w PROD DB nie musi być wystawiony na świat
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: nest_api_prod
+    env_file:
+      - ./backend/.env.prod
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npm run migration:run && node dist/main.js"
+    # API nie wystawiamy na zewnątrz, Nginx będzie proxy
+    expose:
+      - "3000"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: nginx_web_prod
+    ports:
+      - "80:80" # zmień na 8080:80 jeśli 80 zajęty
+    depends_on:
+      - api
+
+volumes:
+  db_data_prod:

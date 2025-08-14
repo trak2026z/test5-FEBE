@@ -1,5 +1,7 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import UsersView from '@/views/UsersView.vue'
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+
+const UsersView = () => import('@/views/UsersView.vue')
 const UserDetailsView = () => import('@/views/UserDetailsView.vue')
 
 const routes: RouteRecordRaw[] = [
@@ -7,7 +9,4 @@ const routes: RouteRecordRaw[] = [
   { path: '/users/:id', name: 'UserDetails', component: UserDetailsView, props: true },
 ]
 
-export default createRouter({
-  history: createWebHistory(),
-  routes,
-})
+export default createRouter({ history: createWebHistory(), routes })

@@ -7,7 +7,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getUsers, User } from '@/api/users'
+import { getUsers } from '@/api/users'
+import type { User } from '@/api/users'
 
 const users = ref<User[]>([])
 const headers = [

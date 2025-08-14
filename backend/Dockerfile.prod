@@ -1,20 +1,28 @@
+# --- build stage ---
 ARG NODE_VERSION=20-alpine
+FROM node:${NODE_VERSION} AS build
 
-# -------- Builder --------
-FROM node:${NODE_VERSION} AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-# -------- Runner --------
-FROM node:${NODE_VERSION} AS runner
+# --- runtime stage ---
+FROM node:${NODE_VERSION} AS runtime
+
 WORKDIR /app
 ENV NODE_ENV=production
+
+# tylko prod dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
-COPY --from=builder /app/dist ./dist
-USER node
+RUN npm ci --omit=dev
+
+# skopiuj zbudowany kod
+COPY --from=build /app/dist ./dist
+
+# jeśli używasz plików konfiguracyjnych (np. ormconfig), skopiuj je tu
+# COPY ormconfig.js ./
+
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
