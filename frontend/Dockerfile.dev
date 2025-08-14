@@ -1,0 +1,15 @@
+ARG NODE_VERSION=20-alpine
+FROM node:${NODE_VERSION}
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+ENV NODE_ENV=development
+
+# Vite musi nasłuchiwać na 0.0.0.0, by był dostępny z hosta
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
